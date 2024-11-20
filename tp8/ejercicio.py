@@ -11,7 +11,6 @@ def mostrar_informacion_alumno():
         st.markdown('**Nombre:** Sbrocco Micaela')
         st.markdown('**Comisión:** C9')
 
-
 def calcular_metricas(df):
     df['Precio_promedio'] = df['Ingreso_total'] / df['Unidades_vendidas']
     df['Margen_promedio'] = (df['Ingreso_total'] - df['Costo_total']) / df['Ingreso_total']
@@ -43,15 +42,13 @@ def graficar_evolucion(df, producto, sucursal="Todas"):
     )
     datos_producto = datos_producto.sort_values('Fecha')
 
-    datos_producto['Unidades_vendidas_suavizadas'] = datos_producto['Unidades_vendidas'].rolling(window=3).mean()
-
     X = np.arange(len(datos_producto))
-    y = datos_producto['Unidades_vendidas_suavizadas'].fillna(0).values 
+    y = datos_producto['Unidades_vendidas'].fillna(0).values  
     coef = np.polyfit(X, y, 1)
     tendencia = np.polyval(coef, X)
 
     fig, ax = plt.subplots(figsize=(26, 16))
-    ax.plot(datos_producto['Fecha'], datos_producto['Unidades_vendidas_suavizadas'], label=producto, color="#2271b3", linestyle="-", linewidth=2)
+    ax.plot(datos_producto['Fecha'], y, label=producto, color="#2271b3", linestyle="-", linewidth=2) 
     ax.plot(datos_producto['Fecha'], tendencia, label="Tendencia", linestyle="--", color="red", linewidth=1.5)
 
     fechas_mes = pd.date_range(datos_producto['Fecha'].min(), datos_producto['Fecha'].max(), freq='MS')
