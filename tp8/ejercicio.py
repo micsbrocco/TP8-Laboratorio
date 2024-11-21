@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+## ATENCION: Debe colocar la direccion en la que ha sido publicada la aplicacion en la siguiente linea\
+# url = 'https://tp8-59320.streamlit.app/'
 st.set_page_config(layout="wide", page_title="Análisis de Ventas")
 
 def mostrar_informacion_alumno():
@@ -15,10 +17,19 @@ def calcular_metricas(df):
     df['Precio_promedio'] = df['Ingreso_total'] / df['Unidades_vendidas']
     df['Margen_promedio'] = (df['Ingreso_total'] - df['Costo_total']) / df['Ingreso_total']
     
-    df['Precio_promedio_anterior'] = df.groupby('Producto')['Precio_promedio'].shift(1)
-    df['Margen_promedio_anterior'] = df.groupby('Producto')['Margen_promedio'].shift(1)
-    df['Unidades_vendidas_anterior'] = df.groupby('Producto')['Unidades_vendidas'].shift(1)
-    
+    precio_promedio_anterior = []
+    margen_promedio_anterior = []
+    unidades_vendidas_anterior = []
+
+    for _, grupo in df.groupby('Producto'):
+        precio_promedio_anterior.extend([np.nan] + grupo['Precio_promedio'].iloc[:-1].tolist())
+        margen_promedio_anterior.extend([np.nan] + grupo['Margen_promedio'].iloc[:-1].tolist())
+        unidades_vendidas_anterior.extend([np.nan] + grupo['Unidades_vendidas'].iloc[:-1].tolist())
+
+    df['Precio_promedio_anterior'] = precio_promedio_anterior
+    df['Margen_promedio_anterior'] = margen_promedio_anterior
+    df['Unidades_vendidas_anterior'] = unidades_vendidas_anterior
+
     resumen = df.groupby('Producto').agg({
         'Precio_promedio': 'mean',
         'Precio_promedio_anterior': 'mean',
@@ -27,6 +38,7 @@ def calcular_metricas(df):
         'Unidades_vendidas': 'sum',
         'Unidades_vendidas_anterior': 'sum',
     }).reset_index()
+
     return resumen
 
 def graficar_evolucion(df, producto, sucursal="Todas"):
@@ -108,12 +120,12 @@ if archivo is not None:
 
                 st.metric(
                     label="Precio Promedio",
-                    value=f"${row['Precio_promedio']:.2f}",
+                    value=f"${row['Precio_promedio']:,.0f}".replace(",", "."),
                     delta=f"{delta_precio:.2f}%",
                 )
                 st.metric(
                     label="Margen Promedio",
-                    value=f"{row['Margen_promedio'] * 100:.2f}%",
+                    value=f"{row['Margen_promedio'] * 100:.0f}%",
                     delta=f"{delta_margen:.2f}%",
                 )
                 st.metric(
